@@ -9,5 +9,6 @@ author:
 
 plugins:
   - jekyll-remote-theme
+  - jekyll-include-cache
   - jekyll-seo-tag
   - jekyll-github-metadata

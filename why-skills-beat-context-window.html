@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why giving AI more information can make it worse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --text: #1a1a1a;
+      --text-secondary: #5a5a5a;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.2);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141414;
+        --bg-secondary: #1e1e1c;
+        --text: #e8e6e0;
+        --text-secondary: #999790;
+        --border: rgba(255,255,255,0.1);
+        --border-strong: rgba(255,255,255,0.2);
+      }
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.75;
+      padding: 0;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    /* Header */
+    .blog-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(24px, 4vw, 34px);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-bottom: 0;
+    }
+
+    header {
+      border-bottom: 0.5px solid var(--border);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Body text */
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: 21px;
+      font-weight: 600;
+      margin: 2.5rem 0 0.85rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-strong);
+      font-size: 13px;
+      font-weight: 500;
+      flex-shrink: 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    p { font-size: 15.5px; margin-bottom: 1.1rem; color: var(--text); }
+
+    ul { margin: 0.5rem 0 1.1rem 1.4rem; }
+    ul li { font-size: 15.5px; margin-bottom: 0.5rem; color: var(--text); }
+    ul li strong { font-weight: 600; }
+
+    .divider {
+      height: 0.5px;
+      background: var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* Term boxes */
+    .term {
+      border-radius: 10px;
+      padding: 0.9rem 1.1rem;
+      margin: 0.25rem 0 1.5rem;
+    }
+
+    .term-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.65;
+    }
+
+    .term-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 5px;
+    }
+
+    .term-desc {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .t-teal   { background: #E1F5EE; color: #085041; }
+    .t-purple { background: #EEEDFE; color: #3C3489; }
+    .t-coral  { background: #FAECE7; color: #712B13; }
+    .t-amber  { background: #FAEEDA; color: #633806; }
+    .t-blue   { background: #E6F1FB; color: #0C447C; }
+    .t-pink   { background: #FBEAF0; color: #72243E; }
+    .t-green  { background: #EAF3DE; color: #27500A; }
+
+    @media (prefers-color-scheme: dark) {
+      .t-teal   { background: #085041; color: #9FE1CB; }
+      .t-purple { background: #26215C; color: #CECBF6; }
+      .t-coral  { background: #4A1B0C; color: #F5C4B3; }
+      .t-amber  { background: #412402; color: #FAC775; }
+      .t-blue   { background: #042C53; color: #B5D4F4; }
+      .t-pink   { background: #4B1528; color: #F4C0D1; }
+      .t-green  { background: #173404; color: #C0DD97; }
+    }
+
+    /* Example pair */
+    .example-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 1rem 0 1.5rem;
+    }
+
+    @media (max-width: 520px) {
+      .example-pair { grid-template-columns: 1fr; }
+    }
+
+    .example-box {
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .ex-without { background: #FCEBEB; color: #501313; }
+    .ex-with    { background: #EAF3DE; color: #173404; }
+
+    @media (prefers-color-scheme: dark) {
+      .ex-without { background: #501313; color: #F7C1C1; }
+      .ex-with    { background: #173404; color: #C0DD97; }
+    }
+
+    .ex-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      opacity: 0.65;
+    }
+
+    /* Bottom summary */
+    .bottom-line {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      margin-top: 2rem;
+    }
+
+    .bottom-line h2 { margin-top: 0; }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 0.5px solid var(--border);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+
+  <header>
+    <span class="blog-tag">AI Fundamentals · Deep Dive</span>
+    <h1>Why giving AI more information can make it worse</h1>
+    <p class="subtitle">A look inside how AI models actually think — and why focus beats memory.</p>
+  </header>
+
+  <p>A question that comes up often: <em>"If the AI already has such a huge memory, why bother with Skills or Sub-Agent setups? Can't we just dump everything into one big prompt?"</em></p>
+
+  <p>The answer is subtle. It's not about running out of space — it's about quality of thinking. Here's what's actually going on.</p>
+
+  <div class="divider"></div>
+
+  <h2>First, some key ideas</h2>
+
+  <div class="term t-teal">
+    <div class="term-label">Term</div>
+    <div class="term-title">Token</div>
+    <div class="term-desc">Think of a token as a small chunk of text — roughly a word or part of a word. When you type a message to an AI, it breaks your text into tokens. The model reads and generates tokens one at a time, like beads on a string.</div>
+  </div>
+
+  <div class="term t-purple">
+    <div class="term-label">Term</div>
+    <div class="term-title">Context Window</div>
+    <div class="term-desc">The context window is the AI's "working memory" — the total amount of text it can hold in mind at once. A large context window means the model can "see" more of your conversation, documents, and instructions at the same time.</div>
+  </div>
+
+  <div class="term t-coral">
+    <div class="term-label">Term</div>
+    <div class="term-title">Attention Mechanism</div>
+    <div class="term-desc">This is how the AI decides what's important. For every word it generates, it "looks back" at everything in its context and gives each token a relevance score. High score = pay attention here. Low score = mostly ignore this. It's like a spotlight that sweeps over your text.</div>
+  </div>
+
+  <div class="term t-amber">
+    <div class="term-label">Term</div>
+    <div class="term-title">Signal-to-Noise Ratio (SNR)</div>
+    <div class="term-desc">Borrowed from radio engineering — signal is the useful information, noise is the irrelevant clutter. A low SNR means the useful signal is drowning in noise. In AI, a long, messy context creates a low SNR: the model struggles to find the truly relevant parts.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2><span class="num">1</span> Attention is a routing function, not a superpower</h2>
+
+  <p>Inside a Transformer (the architecture behind most modern AI), every token has to interact with every other token. The model learns which connections matter through three things: <strong>Query</strong>, <strong>Key</strong>, and <strong>Value</strong> — you can think of them as "what am I looking for?", "what do I contain?", and "what information do I carry?".</p>
+
+  <p>The word "Python" is a perfect example of how context shapes meaning:</p>
+
+  <div class="example-pair">
+    <div class="example-box ex-without">
+      <div class="ex-label">Python + Script</div>
+      The model steers toward <em>software development</em> — programming, code, functions.
+    </div>
+    <div class="example-box ex-with">
+      <div class="ex-label">Python + Jungle</div>
+      The model steers toward <em>zoology</em> — snakes, habitat, wildlife.
+    </div>
+  </div>
+
+  <p>But here's the problem: as you add more text, the attention mechanism has to spread its "focus budget" across thousands of tokens. The more noise in the room, the harder it is to hear the signal.</p>
+
+  <div class="term t-blue">
+    <div class="term-label">Term</div>
+    <div class="term-title">Semantic Latent Space</div>
+    <div class="term-desc">Imagine a vast invisible map where every concept has a location. "King" and "Queen" are nearby. "Cat" and "Dog" are close. "Bank" (money) and "Bank" (river) are in different neighborhoods. When the AI processes your input, it navigates this map. The context you provide steers where on the map it ends up — and therefore what answer it produces.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2><span class="num">2</span> Sub-Agents: a clean room for each task</h2>
+
+  <p>When you work in one long conversation, the AI carries everything forward — earlier messages, previous answers, corrections, tangents. This is <em>stateful</em>: state accumulates like sediment.</p>
+
+  <p>A Sub-Agent is like opening a fresh browser tab. Instead of asking the same AI to juggle ten things at once, you spin up a focused instance just for one subtask, with no baggage from the main conversation.</p>
+
+  <ul>
+    <li><strong>Zero-Base Context:</strong> no leftovers, no hallucinations carried over from earlier in the thread.</li>
+    <li><strong>Information Density:</strong> every token competing for attention is directly relevant to the task.</li>
+    <li><strong>Avoiding "Lost in the Middle":</strong> models tend to ignore information buried deep in a long context. A fresh window physically sidesteps this problem.</li>
+  </ul>
+
+  <div class="term t-pink">
+    <div class="term-label">Term</div>
+    <div class="term-title">"Lost in the Middle"</div>
+    <div class="term-desc">Research shows AI models pay most attention to things at the very beginning and very end of their context — information buried in the middle gets underweighted. Imagine a sandwich where the filling in the center gets ignored. The longer the context, the worse this effect.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2><span class="num">3</span> Skills: a "mini fine-tuning" at runtime</h2>
+
+  <p>Normally, changing how an AI behaves requires <em>fine-tuning</em> — retraining the model on new data, which is expensive and slow. Skills are a shortcut: instead of changing the model, you change the <em>input</em> in a structured way that steers the model's behavior.</p>
+
+  <div class="term t-green">
+    <div class="term-label">Term</div>
+    <div class="term-title">Few-Shot Prompting</div>
+    <div class="term-desc">Instead of just asking a question, you give the AI a few examples of what a good answer looks like — like showing a new employee three sample reports before asking them to write their own. This dramatically narrows the space of possible responses toward the style and format you want.</div>
+  </div>
+
+  <p>By defining a focused Skill, you position the model at a better starting point in semantic space before it even begins generating. It's like pointing a torch in the right direction before you walk into a dark room.</p>
+
+  <div class="divider"></div>
+
+  <h2><span class="num">4</span> Is the result perfect? Stay pragmatic</h2>
+
+  <p>Even a perfect Skill doesn't guarantee a perfect answer. AI models are <em>stochastic</em> — they sample from a probability distribution every time they pick the next token. There's always some randomness baked in.</p>
+
+  <div class="term t-coral">
+    <div class="term-label">Term</div>
+    <div class="term-title">Stochastic Sampling</div>
+    <div class="term-desc">When an AI generates text, it doesn't just always pick the single most likely next word — it samples from a weighted lottery. This is what makes it creative and varied. But it also means two identical prompts can produce slightly different outputs.</div>
+  </div>
+
+  <p>However, Skills dramatically narrow the search space — they increase the probability that the sampling process lands within the range of an excellent answer, even if it can never guarantee it.</p>
+
+  <div class="divider"></div>
+
+  <div class="bottom-line">
+    <h2>Bottom line</h2>
+    <p>Skill and Sub-Agent engineering is fundamentally an <strong>entropy-reduction strategy</strong> — it reduces chaos so the model can be more precise and consistent.</p>
+
+    <div class="example-pair">
+      <div class="example-box ex-without">
+        <div class="ex-label">Without a Skill</div>
+        "Here's a generic request — figure out what to do inside all this noise."
+      </div>
+      <div class="example-box ex-with">
+        <div class="ex-label">With a Skill</div>
+        "This is the task, these are the rules — here's a focused formula sheet inside a quiet room."
+      </div>
+    </div>
+
+    <p style="margin-bottom:0;">The model itself stays the same. But what you feed it steers it toward a more consistent, deterministic path through all the possible answers it could give.</p>
+  </div>
+
+  <footer>
+    Written for engineers and curious non-technical readers alike. · Powered by clear thinking, not just big context windows.
+  </footer>
+
+</main>
+</body>
+</html>

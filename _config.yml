@@ -1,4 +1,12 @@
-remote_theme: mmistakes/minimal-mistakes
+remote_theme: mmistakes/minimal-mistakes@4.24.0
+
+title: "Amichay Feldman"
+description: "AI researcher and engineering, LLMs, and the occasional deep dive."
+url: "https://amichayfeldman.github.io"
+
+author:
+  name: "Amichay Feldman"
+
 plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
